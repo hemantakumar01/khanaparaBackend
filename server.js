@@ -26,7 +26,7 @@ app.use("/api/", resultsRouter);
 const Port = 8080;
 /**Start server only when have valide connection */
 mongoose
-  .connect("mongodb://127.0.0.1:27017/LoginandAuth")
+  .connect(`${process.env.DBURL}`)
   .then(() => {
     try {
       app.listen(Port, () => {
