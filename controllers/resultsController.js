@@ -1,5 +1,72 @@
 import resultsData from "../module/myModleSchema.js";
 import nodemailer from "nodemailer";
+import DataSchema from "../module/pushDataSchema.js";
+import axios from "axios";
+import colors from "colors";
+
+// Get Results
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+export const pushMainData = async (req, res) => {
+  try {
+    if (!req.body.data) {
+      return res.status(200).send({
+        message: "Please Enter Data",
+        success: false,
+      });
+    }
+    const data = await DataSchema.create({ data: req.body.data });
+    res.status(200).send({
+      success: true,
+      message: "This is pushData",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .send({ success: false, message: "error in pushData" });
+  }
+};
+export const getMainData = async (req, res) => {
+  try {
+    const data = await DataSchema.findById({ _id: "654c3b71638d584b9c644a2f" });
+    res.status(200).send({
+      success: true,
+      message: "GetData",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in getMainData",
+    });
+  }
+};
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push into array Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+export const pushArray = async (req, res) => {
+  try {
+    let id = "6547a7b68f9e767f1a4e86e4";
+    const data = await DataSchema.findById({ _id: id });
+    data.data.push({
+      date: "27-10-2023",
+      first: 26,
+      second: 53,
+    });
+    data.save();
+    res.status(200).send({
+      success: true,
+      message: "This is pushArray",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .send({ success: false, message: "error in pushArray" });
+  }
+};
 
 export const getResults = async (req, res) => {
   try {
@@ -19,7 +86,7 @@ export const getResults = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in getUser",
+      message: "Error in getResults",
     });
   }
 };
@@ -47,7 +114,7 @@ export const postResults = async (req, res) => {
         },
       ],
     };
-    console.log(firstRound);
+
     const data = await resultsData.create({ firstRound: firstRound });
     res.status(200).send({
       success: true,
@@ -58,7 +125,7 @@ export const postResults = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in getUser",
+      message: "Error in postResults",
     });
   }
 };
@@ -82,7 +149,7 @@ export const getSingleResults = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in getUser",
+      message: "Error in getSingleResults",
     });
   }
 };
@@ -133,10 +200,10 @@ export const sendMail = async (req, res) => {
     // Create a Nodemailer transporter with your Gmail account
     const transporter = nodemailer.createTransport({
       service: "Gmail",
-      auth: {
-        user: "officialhemantpaswan1@gmail.com",
-        pass: "", // Use the app password you generated
-      },
+      // auth: {
+      //   user: "officialhemantpaswan1@gmail.com",
+      //   pass: "", // Use the app password you generated
+      // },
       auth: {
         user: `${process.env.EMAIL}`,
         pass: `${process.env.PASSWORD}`, // Use the app password you generated
@@ -167,7 +234,154 @@ export const sendMail = async (req, res) => {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "Error in getUser",
+      message: "Error in sendMail",
+    });
+  }
+};
+// }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+export const getData = async (req, res) => {
+  try {
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in getting Data",
+    });
+  }
+};
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+export const pushData = async (req, res) => {
+  try {
+    if (!req.body.data) {
+      return res.status(200).send({
+        message: "Please Enter Data",
+        success: false,
+      });
+    }
+    const data = await DataSchema.create({ data: req.body.data });
+    res.status(200).send({
+      success: true,
+      message: "This is pushData",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .send({ success: false, message: "error in pushData" });
+  }
+};
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push into array Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{ Send Mail }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+const sendResultMail = (dataArray1, dataArray2) => {
+  // Create a transporter
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+
+    auth: {
+      user: `${process.env.EMAIL}`,
+      pass: `${process.env.PASSWORD}`, // Use the app password you generated
+    },
+  });
+
+  // Build the email content
+  let emailContent = "<h1>Your Data Values:</h1>";
+
+  // Function to generate a list based on an array
+  function generateList(dataArray, listName) {
+    let listContent = `<div style="display: inline-block; margin-right: 20px;">`;
+    listContent += `<h2>${listName}</h2><ul>`;
+
+    dataArray.forEach((item) => {
+      listContent += `<li>${item.data}</li>`;
+    });
+
+    listContent += "</ul></div>";
+    return listContent;
+  }
+
+  // Add the lists to the email content
+  emailContent += generateList(dataArray1, "List Between 00-49");
+  emailContent += generateList(dataArray2, "List Between 50-99");
+
+  // Define email options
+  const mailOptions = {
+    from: "officialhemantpaswan1@gmail.com",
+    to: "hemantakumarpaswan@gmail.com",
+    subject: "Your Data Values",
+    html: emailContent, // Use html property to include HTML content
+  };
+
+  // Send the email
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+};
+
+export const sendMailDaily = async () => {
+  try {
+    const { data } = await axios.get(`http://localhost:8080/api/getMainData`);
+    let round1 = [];
+    let round2 = [];
+    data?.data?.data?.map((item) => {
+      if (item.first < 50) {
+        round1.push({ data: item.first });
+      } else {
+        round2.push({ data: item.first });
+      }
+    });
+    console.log(colors.red(round1.length));
+    // console.log(colors.green(round2));
+    const randomNumber1 = [];
+    const randomNumber2 = [];
+    for (let i = 0; i < 20; i++) {
+      const num1 = Math.floor(Math.random() * round1.length);
+      const num2 = Math.floor(Math.random() * round1.length);
+
+      randomNumber1.push(round1[num1]);
+      randomNumber2.push(round2[num2]);
+    }
+
+    await axios.post(`http://localhost:8080/api/results`, {
+      number: randomNumber1,
+      number2: randomNumber2,
+    });
+    sendResultMail(randomNumber1, randomNumber2);
+    // console.log(colors.red());
+    console.log(colors.green(randomNumber2));
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updatePlay = async (req, res) => {
+  try {
+    const result = await resultsData.findOne(
+      { _id: req.body.id },
+      {
+        $set: {
+          "firstRound.data1.$[].results.$[].play": req.body.round1,
+          "firstRound.data2.$[].results.$[].play": req.body.round2,
+        },
+      }
+    );
+
+    res.status(200).send({
+      success: true,
+      message: "Success",
+      result,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error in UpdatePlay",
     });
   }
 };

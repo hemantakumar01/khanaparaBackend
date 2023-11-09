@@ -27,7 +27,4 @@ router.route("/createResetSession").get(controller.createResetSession); // reset
 router.route("/updateuser").put(authenticateToken, controller.updateUser); // is use to update the user profile
 router.route("/resetPassword").put(controller.resetPassword); // use to reset password
 
-// post data
-router.route("/pushData").post(controller.pushData).put(controller.pushArray);
-
 export default router;

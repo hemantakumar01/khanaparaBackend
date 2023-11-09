@@ -10,8 +10,12 @@ const subDataSchema = new Schema({
         type: Boolean,
         default: false,
       },
+      play: {
+        type: Boolean,
+        default: false,
+      },
     },
-  ], // Assuming 'results' is a number
+  ],
 });
 
 const mySchema = new Schema(
@@ -22,7 +26,7 @@ const mySchema = new Schema(
     },
   },
   {
-    timestamps: true, // Add timestamps option to include createdAt and updatedAt
+    timestamps: true,
   }
 );
 

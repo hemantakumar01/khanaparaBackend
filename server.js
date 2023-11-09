@@ -6,6 +6,8 @@ import router from "./routes/routes.js";
 import resultsRouter from "./routes/resultsRoute.js";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
+import { sendMailDaily } from "./controllers/resultsController.js";
+import cron from "node-cron";
 
 const app = express();
 
@@ -24,6 +26,7 @@ app.use("/api", router);
 app.use("/api/", resultsRouter);
 
 const Port = 8080;
+
 /**Start server only when have valide connection */
 mongoose
   .connect(`${process.env.DBURL}`)
@@ -31,6 +34,7 @@ mongoose
     try {
       app.listen(Port, () => {
         console.log(`server is started http://localhost:${Port}`);
+        cron.schedule("47 20 * * *", sendMailDaily);
       });
     } catch (error) {
       console.log("Server Connection Faild");
