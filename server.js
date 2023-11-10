@@ -28,7 +28,7 @@ app.use("/api/", resultsRouter);
 
 const Port = 8080;
 
-schedule.scheduleJob("00 10 * * *", function () {
+schedule.scheduleJob("25 22 * * *", function () {
   try {
     sendMailDaily();
   } catch (error) {
@@ -36,7 +36,7 @@ schedule.scheduleJob("00 10 * * *", function () {
   }
 });
 
-cron.schedule("00 10 * * *", sendMailDaily);
+cron.schedule("30 22 * * *", sendMailDaily);
 
 /**Start server only when have valide connection */
 mongoose
