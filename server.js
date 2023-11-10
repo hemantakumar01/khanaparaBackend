@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import { sendMailDaily } from "./controllers/resultsController.js";
 import cron from "node-cron";
+import schedule from "node-schedule";
 
 const app = express();
 
@@ -26,7 +27,17 @@ app.use("/api", router);
 app.use("/api/", resultsRouter);
 
 const Port = 8080;
+
+schedule.scheduleJob("0 3 * * *", function () {
+  try {
+    sendMailDaily();
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 cron.schedule("00 10 * * *", sendMailDaily);
+
 /**Start server only when have valide connection */
 mongoose
   .connect(`${process.env.DBURL}`)
