@@ -47,13 +47,9 @@ export const getMainData = async (req, res) => {
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push into array Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 export const pushArray = async (req, res) => {
   try {
-    let id = "6547a7b68f9e767f1a4e86e4";
+    let id = "654c3b71638d584b9c644a2f";
     const data = await DataSchema.findById({ _id: id });
-    data.data.push({
-      date: "27-10-2023",
-      first: 26,
-      second: 53,
-    });
+    data.data.push(req.body.data);
     data.save();
     res.status(200).send({
       success: true,
@@ -361,22 +357,35 @@ export const sendMailDaily = async () => {
 };
 
 export const updatePlay = async (req, res) => {
+  const documentId = req.params.documentId;
+  const data1Index = req.params.data1Index;
+  const resultsIndex = req.params.resultsIndex;
+  const newHitValue = req.body.hit; // Assuming the new "hit" value is sent in the request body
+  console.log(
+    `This is data1Index ${data1Index} and this is resultsIndex ${resultsIndex} and this is newHitValue ${newHitValue} and this is documentId ${documentId}`
+  );
   try {
-    const result = await resultsData.findOne(
-      { _id: req.body.id },
-      {
-        $set: {
-          "firstRound.data1.$[].results.$[].play": req.body.round1,
-          "firstRound.data2.$[].results.$[].play": req.body.round2,
-        },
-      }
-    );
+    // Find the document by its ID
+    const document = await resultsData.findById({ _id: documentId });
 
-    res.status(200).send({
-      success: true,
-      message: "Success",
-      result,
-    });
+    // Ensure the document and its structure exists
+    if (
+      !document ||
+      !document.firstRound ||
+      !document.firstRound.data1[data1Index] ||
+      !document.firstRound.data1[data1Index].results[resultsIndex]
+    ) {
+      return res.status(404).json({ error: "Document or index not found" });
+    }
+
+    // Update the "hit" field
+    document.firstRound.data1[data1Index].results[resultsIndex].hit =
+      newHitValue;
+
+    // Save the updated document
+    await document.save();
+
+    res.json({ message: "Hit field updated successfully" });
   } catch (error) {
     console.log(error);
     res.status(500).send({
