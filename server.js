@@ -34,7 +34,7 @@ mongoose
     try {
       app.listen(Port, () => {
         console.log(`server is started http://localhost:${Port}`);
-        cron.schedule("00 18 * * *", sendMailDaily);
+        cron.schedule("15 20 * * *", sendMailDaily);
       });
     } catch (error) {
       console.log("Server Connection Faild");
