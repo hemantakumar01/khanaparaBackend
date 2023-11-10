@@ -26,7 +26,7 @@ app.use("/api", router);
 app.use("/api/", resultsRouter);
 
 const Port = 8080;
-
+cron.schedule("55 20 * * *", sendMailDaily);
 /**Start server only when have valide connection */
 mongoose
   .connect(`${process.env.DBURL}`)
@@ -34,7 +34,6 @@ mongoose
     try {
       app.listen(Port, () => {
         console.log(`server is started http://localhost:${Port}`);
-        cron.schedule("15 20 * * *", sendMailDaily);
       });
     } catch (error) {
       console.log("Server Connection Faild");
