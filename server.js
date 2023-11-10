@@ -28,7 +28,7 @@ app.use("/api/", resultsRouter);
 
 const Port = 8080;
 
-schedule.scheduleJob("0 3 * * *", function () {
+schedule.scheduleJob("00 10 * * *", function () {
   try {
     sendMailDaily();
   } catch (error) {
