@@ -28,17 +28,47 @@ app.use("/api/", resultsRouter);
 
 const Port = 8080;
 
-schedule.scheduleJob("25 22 * * *", function () {
-  try {
-    sendMailDaily();
-  } catch (error) {
-    console.log(error);
-  }
-});
+// schedule.scheduleJob("25 22 * * *", function () {
+//   try {
+//     sendMailDaily();
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
-cron.schedule("30 22 * * *", sendMailDaily);
+// cron.schedule("30 22 * * *", sendMailDaily);
 
 /**Start server only when have valide connection */
+// {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+function executeAtSpecificTime(targetHour, targetMinute, targetFunction) {
+  const now = new Date();
+  const targetTime = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    targetHour,
+    targetMinute,
+    0
+  );
+
+  if (now > targetTime) {
+    targetTime.setDate(targetTime.getDate() + 1); // Move to the next day if the target time has already passed for today.
+  }
+
+  const timeDiff = targetTime - now;
+
+  setTimeout(() => {
+    targetFunction();
+    // After executing the function, you can schedule it to run again tomorrow.
+    executeAtSpecificTime(targetHour, targetMinute, targetFunction);
+  }, timeDiff);
+}
+
+// Example: Execute a function at 3:30 PM daily
+executeAtSpecificTime(22, 55, () => {
+  sendMailDaily();
+});
+// {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 mongoose
   .connect(`${process.env.DBURL}`)
   .then(() => {
