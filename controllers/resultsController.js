@@ -198,11 +198,11 @@ exports.updateHit = async (req, res) => {
   const data1Index = req.params.data1Index;
   const resultsIndex = req.params.resultsIndex;
   const newHitValue = req.body.hit; // Assuming the new "hit" value is sent in the request body
-  // console.log(
-  //   colors.red(
-  //     `This is data1Index ${data1Index} and this is resultsIndex ${resultsIndex} and this is newHitValue ${newHitValue} and this is documentId ${documentId}`
-  //   )
-  // );
+  console.log(
+    colors.red(
+      `This is data1Index ${data1Index} and this is resultsIndex ${resultsIndex} and this is newHitValue ${newHitValue} and this is documentId ${documentId}`
+    )
+  );
   try {
     // Find the document by its ID
     const document = await resultsData.findById(documentId);
@@ -218,8 +218,14 @@ exports.updateHit = async (req, res) => {
     }
 
     // Update the "hit" field
-    document.firstRound.data2[data1Index].results[resultsIndex].hit =
-      newHitValue;
+    if (req.body.data === "data1") {
+      document.firstRound.data1[data1Index].results[resultsIndex].hit =
+        newHitValue;
+    }
+    if (req.body.data === "data2") {
+      document.firstRound.data2[data1Index].results[resultsIndex].hit =
+        newHitValue;
+    }
 
     // Save the updated document
     await document.save();
