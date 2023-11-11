@@ -1,5 +1,5 @@
-import mongoose, { connect } from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+const mongoose = require("mongoose");
+const { MongoMemoryServer } = require("mongodb-memory-server");
 
 const connectToDb = async () => {
   const mongod = await MongoMemoryServer.create();
@@ -10,4 +10,4 @@ const connectToDb = async () => {
   return db;
 };
 
-export default connectToDb;
+module.exports = connectToDb;

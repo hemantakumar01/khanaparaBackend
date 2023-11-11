@@ -1,6 +1,6 @@
-import nodemailer from "nodemailer";
-import MailGen from "mailgen";
-import "dotenv/config";
+const nodemailer = require("nodemailer");
+const Mailgen = require("mailgen");
+require("dotenv/config");
 const EMAIL = process.env.EMAIL;
 const PASSWORD = process.env.PASSWORD;
 let nodeConfig = {
@@ -13,9 +13,9 @@ let nodeConfig = {
   },
 };
 
-let tranporter = nodemailer.createTransport(nodeConfig);
+let transporter = nodemailer.createTransport(nodeConfig);
 
-let mailGenerator = new MailGen({
+let mailGenerator = new Mailgen({
   theme: "default",
   product: {
     name: "Hemanta Kr. Paswan",
@@ -31,7 +31,7 @@ let mailGenerator = new MailGen({
   "subject" : "This is sample Subject"
 
 */
-export const registerMail = async (req, res) => {
+const registerMail = async (req, res) => {
   const { username, userEmail, text, subject } = req.body;
   // Generate SMTP service account from ethereal.email
 
@@ -43,7 +43,7 @@ export const registerMail = async (req, res) => {
       pass: PASSWORD,
     },
   };
-  // Create a SMTP transporter object
+  // Create an SMTP transporter object
   let transporter = nodemailer.createTransport(config);
   var email = {
     body: {
@@ -57,7 +57,7 @@ export const registerMail = async (req, res) => {
   let message = {
     from: EMAIL,
     to: userEmail,
-    subject: subject || "Signup Sccessffully",
+    subject: subject || "Signup Successfully",
     html: emailbody,
   };
 
@@ -66,6 +66,10 @@ export const registerMail = async (req, res) => {
       console.log("Error occurred. " + err.message);
       return process.exit(1);
     }
-    res.status(200).send(`Message Succesfully send to ${userEmail}`);
+    res.status(200).send(`Message Successfully sent to ${userEmail}`);
   });
+};
+
+module.exports = {
+  registerMail,
 };

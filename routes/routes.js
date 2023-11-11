@@ -1,13 +1,13 @@
-import { Router } from "express";
+const { Router } = require("express");
 const router = Router();
 
 /** import all controllers */
-import * as controller from "../controllers/appControllers.js";
-import {
+const controller = require("../controllers/appControllers.js");
+const {
   authenticateToken,
   localVariable,
-} from "../middleware/AuthMiddleware.js";
-import { registerMail } from "../controllers/mailer.js";
+} = require("../middleware/AuthMiddleware.js");
+const { registerMail } = require("../controllers/mailer.js");
 
 /** POST Methods */
 router.route("/register").post(controller.register); // register user
@@ -27,4 +27,4 @@ router.route("/createResetSession").get(controller.createResetSession); // reset
 router.route("/updateuser").put(authenticateToken, controller.updateUser); // is use to update the user profile
 router.route("/resetPassword").put(controller.resetPassword); // use to reset password
 
-export default router;
+module.exports = router;

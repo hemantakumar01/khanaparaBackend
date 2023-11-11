@@ -1,21 +1,26 @@
-import express from "express";
-import cors from "cors";
-import morgon from "morgan";
-import connectToDb from "./database/conn.js";
-import router from "./routes/routes.js";
-import resultsRouter from "./routes/resultsRoute.js";
-import cookieParser from "cookie-parser";
-import mongoose from "mongoose";
-import { sendMailDaily } from "./controllers/resultsController.js";
-import cron from "node-cron";
-import schedule from "node-schedule";
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const connectToDb = require("./database/conn.js");
+const router = require("./routes/routes.js");
+const resultsRouter = require("./routes/resultsRoute.js");
+const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
+const { sendMailDaily } = require("./controllers/resultsController.js");
+const cron = require("node-cron");
+const schedule = require("node-schedule");
+const dotenv = require("dotenv"); // Add this line
+
+dotenv.config(); // Load environment variables from a .env file
 
 const app = express();
+
+// ... (rest of your code)
 
 /** using middleware */
 app.use(express.json());
 app.use(cors());
-app.use(morgon("tiny"));
+app.use(morgan("tiny"));
 app.disable("x-powered-by");
 app.use(cookieParser());
 
@@ -25,18 +30,16 @@ app.get("/", (req, res) => {
 });
 app.use("/api", router);
 app.use("/api/", resultsRouter);
+// TODO  {{{{{{{{{{{{{{{{{{{{{{{{{{{ SET TIME }}}}}}}}}}}}}}}}}}}}}}}}}}}
+schedule.scheduleJob("24 13 * * *", function () {
+  try {
+    sendMailDaily();
+  } catch (error) {
+    console.log(error);
+  }
+});
 
-const Port = 8080;
-
-// schedule.scheduleJob("25 22 * * *", function () {
-//   try {
-//     sendMailDaily();
-//   } catch (error) {
-//     console.log(error);
-//   }
-// });
-
-// cron.schedule("30 22 * * *", sendMailDaily);
+// cron.schedule("40 10 * * *", sendMailDaily);
 
 /**Start server only when have valide connection */
 // {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
@@ -65,22 +68,27 @@ function executeAtSpecificTime(targetHour, targetMinute, targetFunction) {
 }
 
 // Example: Execute a function at 3:30 PM daily
-executeAtSpecificTime(22, 55, () => {
+// TODO  {{{{{{{{{{{{{{{{{{{{{{{{{{{ SET TIME }}}}}}}}}}}}}}}}}}}}}}}}}}}
+
+executeAtSpecificTime(13, 21, () => {
   sendMailDaily();
 });
 // {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
+
 mongoose
-  .connect(`${process.env.DBURL}`)
+  .connect(process.env.DBURL) // Use process.env to access environment variables
   .then(() => {
     try {
-      app.listen(Port, () => {
-        console.log(`server is started http://localhost:${Port}`);
+      app.listen(process.env.PORT || 8080, () => {
+        console.log(
+          `server is started http://localhost:${process.env.PORT || 8080}`
+        );
       });
     } catch (error) {
-      console.log("Server Connection Faild");
+      console.log("Server Connection Failed");
       console.log(error);
     }
   })
   .catch((error) => {
-    console.log("invalid Database Connection");
+    console.log("Invalid Database Connection");
   });

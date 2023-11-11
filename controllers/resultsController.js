@@ -1,13 +1,14 @@
-import resultsData from "../module/myModleSchema.js";
-import nodemailer from "nodemailer";
-import DataSchema from "../module/pushDataSchema.js";
-import axios from "axios";
-import colors from "colors";
+const nodemailer = require("nodemailer");
+const DataSchema = require("../module/pushDataSchema.js");
+const axios = require("axios");
+const colors = require("colors");
+const resultsData = require("../module/myModleSchema.js");
+const moment = require("moment");
 
 // Get Results
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-export const pushMainData = async (req, res) => {
+exports.pushMainData = async (req, res) => {
   try {
     if (!req.body.data) {
       return res.status(200).send({
@@ -28,9 +29,32 @@ export const pushMainData = async (req, res) => {
       .send({ success: false, message: "error in pushData" });
   }
 };
-export const getMainData = async (req, res) => {
+
+exports.pushData = async (req, res) => {
   try {
-    const data = await DataSchema.findById({ _id: "654c3b71638d584b9c644a2f" });
+    if (!req.body.data) {
+      return res.status(200).send({
+        message: "Please Enter Data",
+        success: false,
+      });
+    }
+    const data = await DataSchema.create({ data: req.body.data });
+    res.status(200).send({
+      success: true,
+      message: "This is pushData",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(500)
+      .send({ success: false, message: "error in pushData" });
+  }
+};
+
+exports.getMainData = async (req, res) => {
+  try {
+    const data = await DataSchema.findById("654f6fb472daeb15ff7e078f");
     res.status(200).send({
       success: true,
       message: "GetData",
@@ -45,10 +69,10 @@ export const getMainData = async (req, res) => {
   }
 };
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push into array Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-export const pushArray = async (req, res) => {
+exports.pushArray = async (req, res) => {
   try {
-    let id = "654c3b71638d584b9c644a2f";
-    const data = await DataSchema.findById({ _id: id });
+    const id = "654f6fb472daeb15ff7e078f";
+    const data = await DataSchema.findById(id);
     data.data.push(req.body.data);
     data.save();
     res.status(200).send({
@@ -64,7 +88,7 @@ export const pushArray = async (req, res) => {
   }
 };
 
-export const getResults = async (req, res) => {
+exports.getResults = async (req, res) => {
   try {
     const data = await resultsData.find({});
     if (!data) {
@@ -88,7 +112,7 @@ export const getResults = async (req, res) => {
 };
 
 // To post all results
-export const postResults = async (req, res) => {
+exports.postResults = async (req, res) => {
   try {
     const firstRound = {
       data1: [
@@ -110,12 +134,31 @@ export const postResults = async (req, res) => {
         },
       ],
     };
-
+    const today = new Date();
+    const isoString = today.toISOString();
+    const ismatched = await resultsData.find({});
+    const arrayofDate = [];
+    if (ismatched) {
+      ismatched.map((item) => {
+        if (
+          moment(item.createdAt).format("DD-MM-YYYY") ===
+          moment(isoString).format("DD-MM-YYYY")
+        ) {
+          arrayofDate.push(item.createdAt);
+        }
+      });
+    }
+    if (arrayofDate.length > 0) {
+      return res.status(200).send({
+        success: false,
+        message: "Data Already exist",
+      });
+    }
     const data = await resultsData.create({ firstRound: firstRound });
     res.status(200).send({
       success: true,
       message: "Success",
-      data,
+      data: ismatched,
     });
   } catch (error) {
     console.log(error);
@@ -126,10 +169,9 @@ export const postResults = async (req, res) => {
   }
 };
 
-export const getSingleResults = async (req, res) => {
+exports.getSingleResults = async (req, res) => {
   try {
-    console.log(req.body.id);
-    const data = await resultsData.findById({ _id: req.body.id });
+    const data = await resultsData.findById(req.body.id);
     if (!data) {
       return res.status(200).send({
         success: false,
@@ -151,7 +193,89 @@ export const getSingleResults = async (req, res) => {
 };
 
 // Set hit
-export const updateHit = async (req, res) => {
+exports.updateHit = async (req, res) => {
+  const documentId = req.params.documentId;
+  const data1Index = req.params.data1Index;
+  const resultsIndex = req.params.resultsIndex;
+  const newHitValue = req.body.hit; // Assuming the new "hit" value is sent in the request body
+  // console.log(
+  //   colors.red(
+  //     `This is data1Index ${data1Index} and this is resultsIndex ${resultsIndex} and this is newHitValue ${newHitValue} and this is documentId ${documentId}`
+  //   )
+  // );
+  try {
+    // Find the document by its ID
+    const document = await resultsData.findById(documentId);
+
+    // Ensure the document and its structure exists
+    if (
+      !document ||
+      !document.firstRound ||
+      !document.firstRound.data1[data1Index] ||
+      !document.firstRound.data1[data1Index].results[resultsIndex]
+    ) {
+      return res.status(404).json({ error: "Document or index not found" });
+    }
+
+    // Update the "hit" field
+    document.firstRound.data2[data1Index].results[resultsIndex].hit =
+      newHitValue;
+
+    // Save the updated document
+    await document.save();
+
+    res.json({ message: "Hit field updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while updating the hit field" });
+  }
+};
+
+// SendMail
+exports.sendMail = async (req, res) => {
+  try {
+    // Create a Nodemailer transporter with your Gmail account
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: `${process.env.EMAIL}`,
+        pass: `${process.env.PASSWORD}`,
+      },
+    });
+
+    // Define the email data
+    const mailOptions = {
+      from: EMAIL,
+      to: "hemantakumarpaswan@gmail.com",
+      subject: "Subject of the Email - final",
+      text: "This is the text of the email.",
+    };
+
+    // Send the email
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Error sending email: " + error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+    res.status(200).send({
+      success: true,
+      message: "Email sent",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in sendMail",
+    });
+  }
+};
+// }}}}}}}
+
+exports.updatePlay = async (req, res) => {
   const documentId = req.params.documentId;
   const data1Index = req.params.data1Index;
   const resultsIndex = req.params.resultsIndex;
@@ -182,16 +306,15 @@ export const updateHit = async (req, res) => {
 
     res.json({ message: "Hit field updated successfully" });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ error: "An error occurred while updating the hit field" });
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error in UpdatePlay",
+    });
   }
 };
 
-// SendMail
-
-export const sendMail = async (req, res) => {
+exports.sendMail = async (req, res) => {
   try {
     // Create a Nodemailer transporter with your Gmail account
     const transporter = nodemailer.createTransport({
@@ -232,40 +355,6 @@ export const sendMail = async (req, res) => {
       success: false,
       message: "Error in sendMail",
     });
-  }
-};
-// }}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
-export const getData = async (req, res) => {
-  try {
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      success: false,
-      message: "Error in getting Data",
-    });
-  }
-};
-
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-export const pushData = async (req, res) => {
-  try {
-    if (!req.body.data) {
-      return res.status(200).send({
-        message: "Please Enter Data",
-        success: false,
-      });
-    }
-    const data = await DataSchema.create({ data: req.body.data });
-    res.status(200).send({
-      success: true,
-      message: "This is pushData",
-      data,
-    });
-  } catch (error) {
-    console.log(error);
-    return res
-      .status(500)
-      .send({ success: false, message: "error in pushData" });
   }
 };
 
@@ -320,7 +409,7 @@ const sendResultMail = (dataArray1, dataArray2) => {
   });
 };
 
-export const sendMailDaily = async () => {
+exports.sendMailDaily = async (req, res) => {
   try {
     const { data } = await axios.get(`http://localhost:8080/api/getMainData`);
     let round1 = [];
@@ -332,7 +421,6 @@ export const sendMailDaily = async () => {
         round2.push({ data: item.first });
       }
     });
-    console.log(colors.red(round1.length));
     // console.log(colors.green(round2));
     const randomNumber1 = [];
     const randomNumber2 = [];
@@ -350,47 +438,32 @@ export const sendMailDaily = async () => {
     });
     sendResultMail(randomNumber1, randomNumber2);
     // console.log(colors.red());
-    console.log(colors.green(randomNumber2));
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const updatePlay = async (req, res) => {
-  const documentId = req.params.documentId;
-  const data1Index = req.params.data1Index;
-  const resultsIndex = req.params.resultsIndex;
-  const newHitValue = req.body.hit; // Assuming the new "hit" value is sent in the request body
-  console.log(
-    `This is data1Index ${data1Index} and this is resultsIndex ${resultsIndex} and this is newHitValue ${newHitValue} and this is documentId ${documentId}`
-  );
-  try {
-    // Find the document by its ID
-    const document = await resultsData.findById({ _id: documentId });
-
-    // Ensure the document and its structure exists
-    if (
-      !document ||
-      !document.firstRound ||
-      !document.firstRound.data1[data1Index] ||
-      !document.firstRound.data1[data1Index].results[resultsIndex]
-    ) {
-      return res.status(404).json({ error: "Document or index not found" });
-    }
-
-    // Update the "hit" field
-    document.firstRound.data1[data1Index].results[resultsIndex].hit =
-      newHitValue;
-
-    // Save the updated document
-    await document.save();
-
-    res.json({ message: "Hit field updated successfully" });
+    res.status(200).send({
+      success: true,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
-      message: "error in UpdatePlay",
+      data: error,
+      message: "senner in sendMailDaily",
+    });
+  }
+};
+
+exports.getAllData = async (req, res) => {
+  try {
+    const data = await DataSchema.findById({ _id: "654f6fb472daeb15ff7e078f" });
+    res.status(200).send({
+      success: true,
+      message: "Data Are",
+      data,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "Error in retAllData",
     });
   }
 };

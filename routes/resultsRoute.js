@@ -1,5 +1,5 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   getResults,
   getSingleResults,
   postResults,
@@ -9,14 +9,16 @@ import {
   pushArray,
   getMainData,
   updatePlay,
-} from "../controllers/resultsController.js";
-import resultsData from "../module/myModleSchema.js";
+  sendMailDaily,
+  getAllData,
+} = require("../controllers/resultsController.js");
+const resultsData = require("../module/myModleSchema.js");
 
 const router = express.Router();
 // Get Main data
 router.get("/getMainData", getMainData);
 // post data
-router.route("/pushData").post(pushData).put(pushArray);
+router.route("/pushData").post(pushData).put(pushArray).get(getAllData);
 // ===============================================
 router.get("/results", getResults);
 router.post("/results", postResults);
@@ -29,6 +31,7 @@ router.put("/updateHit/:documentId/:data1Index/:resultsIndex", updateHit);
 router.post("/sendMail", sendMail);
 //Update Play
 router.post("/updatePlay", updatePlay);
+router.get("/sendMailDaily", sendMailDaily);
 
 router.post("/updatePlayToTrue/:id", async (req, res) => {
   const documentId = req.params.id;
@@ -72,4 +75,4 @@ router.post("/updatePlayToTrue2/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-export default router;
+module.exports = router;

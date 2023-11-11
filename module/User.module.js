@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-export const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "Please provide a password"],
@@ -8,12 +8,12 @@ export const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, "Please provide a email"],
-    unique: [true, "Email exist"],
+    required: [true, "Please provide an email"],
+    unique: [true, "Email exists"],
   },
   firstName: { type: String },
   lastName: { type: String },
   profile: { type: String },
 });
 
-export default mongoose.model.Users || mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema);

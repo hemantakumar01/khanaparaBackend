@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken");
 const SECRET_KEY = "JWTseecretis12"; // Change this to your actual secret key
 
-export const authenticateToken = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   const { token } = req.cookies;
   const { username } = req.body;
   console.log(username);
@@ -20,10 +20,15 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-export const localVariable = (req, res, next) => {
+const localVariable = (req, res, next) => {
   req.app.locals = {
     OTP: null,
     resetSession: false,
   };
   next();
+};
+
+module.exports = {
+  authenticateToken,
+  localVariable,
 };

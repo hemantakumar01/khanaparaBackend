@@ -1,8 +1,8 @@
-import UserModle from "../module/User.module.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import otpGenerator from "otp-generator";
-import DataSchema from "../module/pushDataSchema.js";
+const UserModle = require("../module/User.module.js");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const otpGenerator = require("otp-generator");
+const DataSchema = require("../module/pushDataSchema.js");
 
 /** POST: http://localhost:8080/api/register 
  * @param : {
@@ -16,7 +16,7 @@ import DataSchema from "../module/pushDataSchema.js";
   "profile": ""
 }
 */
-export async function register(req, res) {
+async function register(req, res) {
   try {
     const { email, password, firstName, lastName } = req.body;
     let user = await UserModle.findOne({ email });
@@ -34,11 +34,10 @@ export async function register(req, res) {
       const token = jwt.sign();
       res.status(201).send({ user, message: "User Created successfully" });
     } else {
-      return res.status(404).send({ message: "User already exist" });
+      return res.status(404).send({ message: "User already exists" });
     }
   } catch (error) {
-    console.log("This is Errroer");
-
+    console.log("This is Error");
     return res.status(500).send(error);
   }
 }
@@ -49,16 +48,16 @@ export async function register(req, res) {
   "password" : "admin123"
 }
 */
-export async function login(req, res) {
+async function login(req, res) {
   try {
     const { email, password } = req.body;
 
     const user = await UserModle.findOne({ email });
     if (!user) return res.status(404).send({ msg: "user not exist" });
 
-    const isPasswordVerifed = await bcrypt.compare(password, user.password);
-    if (!isPasswordVerifed)
-      return res.status(400).send({ msg: "Pasword not matched" });
+    const isPasswordVerified = await bcrypt.compare(password, user.password);
+    if (!isPasswordVerified)
+      return res.status(400).send({ msg: "Password not matched" });
     const token = jwt.sign({ userId: user._id }, "JWTseecretis12", {
       expiresIn: "1h",
     });
@@ -73,7 +72,7 @@ export async function login(req, res) {
 }
 
 /** GET: http://localhost:8080/api/user/example123 */
-export async function getUser(req, res) {
+async function getUser(req, res) {
   const { username } = req.params;
   if (!username) return res.status(400).send({ msg: "User Not Found" });
   try {
@@ -96,7 +95,7 @@ body: {
     profile : ''
 }
 */
-export async function updateUser(req, res) {
+async function updateUser(req, res) {
   try {
     const id = req.query.id;
     if (id) {
@@ -114,7 +113,7 @@ export async function updateUser(req, res) {
 }
 
 /** GET: http://localhost:8080/api/generateOTP */
-export async function generateOTP(req, res) {
+async function generateOTP(req, res) {
   req.app.locals.OTP = await otpGenerator.generate(6, {
     lowerCaseAlphabets: false,
     upperCaseAlphabets: false,
@@ -124,19 +123,19 @@ export async function generateOTP(req, res) {
 }
 
 /** GET: http://localhost:8080/api/verifyOTP */
-export async function verifyOTP(req, res) {
+async function verifyOTP(req, res) {
   const { code } = req.query;
   if (parseInt(req.app.locals.OTP) === parseInt(code)) {
     req.app.locals.OTP = null;
     req.app.locals.resetSession = true;
-    return res.status(201).send({ msg: "OTP Verifyed" });
+    return res.status(201).send({ msg: "OTP Verified" });
   }
   return res.status(400).send({ msg: "Invalid OTP" });
 }
 
-// successfully redirect user when OTP is valid
+// Successfully redirect the user when OTP is valid
 /** GET: http://localhost:8080/api/createResetSession */
-export async function createResetSession(req, res) {
+async function createResetSession(req, res) {
   if (req.app.locals.resetSession) {
     req.app.locals.resetSession = false;
     return res.status(201).send({ msg: "Access Granted" });
@@ -144,10 +143,9 @@ export async function createResetSession(req, res) {
   return res.status(440).send({ msg: "Session Expired" });
 }
 
-// update the password when we have valid session
+// Update the password when we have a valid session
 /** PUT: http://localhost:8080/api/resetPassword */
-/** PUT: http://localhost:8080/api/resetPassword */
-export async function resetPassword(req, res) {
+async function resetPassword(req, res) {
   try {
     // if (!req.app.locals.resetSession)
     //   return res.status(440).send({ error: "Session expired!" });
@@ -164,8 +162,8 @@ export async function resetPassword(req, res) {
         { new: true }
       ); // Return the updated document
       if (!updatedUser) return res.status(400).send({ msg: "User Not found" });
-      req.app.locals.resetSession = false; // reset session
-      return res.status(200).send({ msg: "Updated Succesfully" });
+      req.app.locals.resetSession = false; // Reset session
+      return res.status(200).send({ msg: "Updated Successfully" });
     } catch (error) {
       return res.status(500).send({ error });
     }
@@ -173,3 +171,14 @@ export async function resetPassword(req, res) {
     return res.status(401).send({ error });
   }
 }
+
+module.exports = {
+  register,
+  login,
+  getUser,
+  updateUser,
+  generateOTP,
+  verifyOTP,
+  createResetSession,
+  resetPassword,
+};
