@@ -54,7 +54,7 @@ exports.pushData = async (req, res) => {
 
 exports.getMainData = async (req, res) => {
   try {
-    const data = await DataSchema.findById("654f6fb472daeb15ff7e078f");
+    const data = await DataSchema.findById("6578800d7729eefabdd5f94d");
     res.status(200).send({
       success: true,
       message: "GetData",
@@ -71,7 +71,7 @@ exports.getMainData = async (req, res) => {
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  Push into array Data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 exports.pushArray = async (req, res) => {
   try {
-    const id = "654f6fb472daeb15ff7e078f";
+    const id = "6578800d7729eefabdd5f94d";
     const data = await DataSchema.findById(id);
     data.data.push(req.body.data);
     data.save();
@@ -459,7 +459,7 @@ exports.sendMailDaily = async (req, res) => {
 
 exports.getAllData = async (req, res) => {
   try {
-    const data = await DataSchema.findById({ _id: "654f6fb472daeb15ff7e078f" });
+    const data = await DataSchema.findById({ _id: "6578800d7729eefabdd5f94d" });
     res.status(200).send({
       success: true,
       message: "Data Are",

@@ -1,15 +1,17 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const connectToDb = require("./database/conn.js");
+// const connectToDb = require("./database/conn.js");
 const router = require("./routes/routes.js");
 const resultsRouter = require("./routes/resultsRoute.js");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const { sendMailDaily } = require("./controllers/resultsController.js");
-const cron = require("node-cron");
+// const cron = require("node-cron");
 const schedule = require("node-schedule");
 const dotenv = require("dotenv"); // Add this line
+// const MainArray = require("./module/pushDataSchema.js");
+// const dataArrayOfMainData = require("./data.js");
 
 dotenv.config(); // Load environment variables from a .env file
 
@@ -75,6 +77,18 @@ executeAtSpecificTime(13, 21, () => {
 });
 // {{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}
 
+// const findandUpdate = async () => {
+//   try {
+//     console.log("Working");
+//     // dataArrayOfMainData.map((item) => {
+//     //   console.log(item);
+//     // });
+//     const data = await MainArray.create({ data: dataArrayOfMainData });
+//     console.log("Success");
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 mongoose
   .connect(process.env.DBURL) // Use process.env to access environment variables
   .then(() => {
@@ -92,3 +106,5 @@ mongoose
   .catch((error) => {
     console.log("Invalid Database Connection");
   });
+
+// findandUpdate();
